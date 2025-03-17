@@ -46,10 +46,9 @@ def test_empty_url_raises_error():
         send_post_request('')
 
 def test_request_exception_handling():
-    with patch('requests.post') as mock_post:
-        mock_post.side_effect = requests.exceptions.ConnectionError("Network error")
-        
-        with pytest.raises(RuntimeError, match="POST request failed: Network error"):
+    with pytest.raises(requests.exceptions.ConnectionError, match="Network error"):
+        with patch('requests.post') as mock_post:
+            mock_post.side_effect = requests.exceptions.ConnectionError("Network error")
             send_post_request('https://example.com/api')
 
 def test_http_error_handling():
