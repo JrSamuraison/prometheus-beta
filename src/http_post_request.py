@@ -29,25 +29,20 @@ def send_post_request(url: str,
     data = data or {}
     headers = headers or {}
 
-    try:
-        # Send POST request
-        response = requests.post(
-            url, 
-            json=data, 
-            headers=headers, 
-            timeout=timeout
-        )
+    # Send POST request
+    response = requests.post(
+        url, 
+        json=data, 
+        headers=headers, 
+        timeout=timeout
+    )
 
-        # Raise an exception for HTTP errors
-        response.raise_for_status()
+    # Raise an exception for HTTP errors
+    response.raise_for_status()
 
-        # Return response details
-        return {
-            'status_code': response.status_code,
-            'body': response.json() if response.content else None,
-            'headers': dict(response.headers)
-        }
-
-    except requests.exceptions.RequestException as e:
-        # Handle various request-related exceptions
-        raise RuntimeError(f"POST request failed: {str(e)}")
+    # Return response details
+    return {
+        'status_code': response.status_code,
+        'body': response.json() if response.content else None,
+        'headers': dict(response.headers)
+    }
