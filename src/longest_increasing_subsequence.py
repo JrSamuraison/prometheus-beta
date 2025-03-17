@@ -33,21 +33,26 @@ def find_longest_increasing_subsequence(arr):
     max_length = 1
     max_index = 0
     
+    # Enhancement: track all potential last elements for max length
+    candidates = [(0, arr[0])]
+    
     # Enhanced DP to find LIS
     for i in range(1, n):
         for j in range(i):
-            # Specific conditions to prefer lower values with same length
-            # and longer/less limited subsequences
-            if arr[i] > arr[j] and (dp[i] < dp[j] + 1 or 
-                (dp[i] == dp[j] + 1 and arr[i] < arr[max_index])):
+            # Conditions for extending subsequence
+            if arr[i] > arr[j] and (dp[i] < dp[j] + 1):
                 dp[i] = dp[j] + 1
                 prev[i] = j
         
         # Update max length with more nuanced conditions
-        if (dp[i] > max_length or 
-            (dp[i] == max_length and arr[i] < arr[max_index])):
+        if dp[i] > max_length:
             max_length = dp[i]
-            max_index = i
+            candidates = [(i, arr[i])]
+        elif dp[i] == max_length:
+            candidates.append((i, arr[i]))
+    
+    # Find the candidate with the smallest terminating element
+    max_index = min(candidates, key=lambda x: x[1])[0]
     
     # Reconstruct the subsequence
     subsequence = []
