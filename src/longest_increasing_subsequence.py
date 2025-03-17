@@ -44,7 +44,7 @@ def find_longest_increasing_subsequence(arr):
                 prev[i] = j
         
         # Update max length and index
-        if dp[i] > max_length:
+        if dp[i] > max_length or (dp[i] == max_length and arr[i] < arr[max_index]):
             max_length = dp[i]
             max_index = i
     
