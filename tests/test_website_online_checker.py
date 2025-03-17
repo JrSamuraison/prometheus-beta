@@ -50,7 +50,7 @@ def test_whitespace_url_raises_error():
     with pytest.raises(ValueError, match="URL cannot be empty"):
         is_website_online('   ')
 
-def test_custom_timeout():
+def test_custom_timeout(monkeypatch):
     def mock_get(*args, **kwargs):
         assert kwargs['timeout'] == 10
         return MockResponse(200)
