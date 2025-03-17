@@ -1,7 +1,6 @@
 def find_longest_increasing_subsequence(arr):
     """
-    Find the longest increasing subsequence in the given array using 
-    the patience sorting algorithm.
+    Find the longest increasing subsequence in the given array.
     
     A subsequence is a sequence that can be derived from an array by deleting 
     some or no elements without changing the order of the remaining elements.
@@ -12,7 +11,7 @@ def find_longest_increasing_subsequence(arr):
     Returns:
         list: The longest increasing subsequence
     
-    Time Complexity: O(n log n)
+    Time Complexity: O(n^2)
     Space Complexity: O(n)
     
     Edge Cases:
@@ -23,54 +22,39 @@ def find_longest_increasing_subsequence(arr):
     if not arr:
         return []
     
-    # Piles for patience sorting 
-    piles = []
-    # Backtracking mapping 
-    backtrack = [None] * len(arr)
+    # Length of the input array
+    n = len(arr)
     
-    for i, x in enumerate(arr):
-        # Binary search to find where to place current element
-        pile_index = 0
-        while pile_index < len(piles):
-            # Check top of the pile
-            if x <= piles[pile_index][-1]:
-                break
-            pile_index += 1
+    # DP arrays to track subsequence length and previous indices
+    dp = [1] * n
+    prev = [-1] * n
+    
+    # Track max length and last index
+    max_length = 1
+    max_index = 0
+    
+    # Enhanced DP to find LIS
+    for i in range(1, n):
+        for j in range(i):
+            # Specific conditions to prefer lower values with same length
+            # and longer/less limited subsequences
+            if arr[i] > arr[j] and (dp[i] < dp[j] + 1 or 
+                (dp[i] == dp[j] + 1 and arr[i] < arr[max_index])):
+                dp[i] = dp[j] + 1
+                prev[i] = j
         
-        # Start a new pile or add to an existing pile
-        if pile_index == len(piles):
-            # Start a new pile 
-            if piles:
-                # Keep track of where we came from 
-                backtrack[i] = piles[-1][-1]
-            piles.append([x])
-        else:
-            # Add current element on top of a lower pile
-            if pile_index > 0:
-                # Keep track of where we came from
-                backtrack[i] = piles[pile_index-1][-1]
-            piles[pile_index].append(x)
+        # Update max length with more nuanced conditions
+        if (dp[i] > max_length or 
+            (dp[i] == max_length and arr[i] < arr[max_index])):
+            max_length = dp[i]
+            max_index = i
     
-    # Reconstruct the subsequence by backtracking
+    # Reconstruct the subsequence
     subsequence = []
-    current = piles[-1][-1]
+    current = max_index
     
-    # Find the last occurrence of the last element 
-    last_index = len(arr) - 1
-    while last_index >= 0 and arr[last_index] != current:
-        last_index -= 1
-    
-    # Backtrack and build the subsequence
-    while last_index is not None and last_index >= 0:
-        subsequence.insert(0, arr[last_index])
-        # Find previous element 
-        current = backtrack[last_index] if backtrack[last_index] is not None else None
-        if current is not None:
-            # Find last occurrence of the previous element
-            last_index = len(arr) - 1
-            while last_index >= 0 and arr[last_index] != current:
-                last_index -= 1
-        else:
-            break
+    while current != -1:
+        subsequence.insert(0, arr[current])
+        current = prev[current]
     
     return subsequence
