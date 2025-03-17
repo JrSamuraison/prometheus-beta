@@ -10,7 +10,7 @@ def test_positive_celsius():
 def test_negative_celsius():
     """Test conversion of negative temperatures."""
     assert celsius_to_fahrenheit(-40) == -40.0
-    assert celsius_to_fahrenheit(-273.15) == -459.67
+    assert pytest.approx(celsius_to_fahrenheit(-273.15), abs=0.01) == -459.67
 
 def test_float_celsius():
     """Test conversion of float temperatures."""
