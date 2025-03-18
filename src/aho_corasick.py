@@ -170,18 +170,20 @@ class AhoCorasick:
             else:
                 current = self.trie
             
-            # Check for matches
-            state = current
-            state_key = self._dict_to_key(state)
-            while state is not self.trie:
-                if '$' in state:
-                    pattern = state['$']
-                    # Find start index by subtracting pattern length
-                    start_index = i - len(pattern) + 1
-                    matches.append((start_index, pattern))
-                
-                # Follow failure link
-                state_key = self.failure_links.get(state_key, self._dict_to_key(self.trie))
-                state = self._get_dict_from_key(state_key)
+            # Check for matches at each state on the path
+            def check_matches(state, start_index):
+                while state is not self.trie:
+                    if '$' in state:
+                        pattern = state['$']
+                        matches.append((start_index, pattern))
+                    
+                    # Follow failure link
+                    state_key = self._dict_to_key(state)
+                    state = self._get_dict_from_key(
+                        self.failure_links.get(state_key, self._dict_to_key(self.trie))
+                    )
+            
+            # Find all matches
+            check_matches(current, i - len(list(current.keys() - {'$'})) + 1)
         
         return matches
