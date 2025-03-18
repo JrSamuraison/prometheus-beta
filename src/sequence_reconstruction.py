@@ -21,30 +21,13 @@ def min_reconstruction_edits(original, modified):
     if not modified:
         return len(original)
 
-    # Create a dynamic programming matrix
-    n, m = len(original), len(modified)
-    # dp[i][j] represents min edits to transform original[:i] to modified[:j]
-    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    # Filter out common elements while preserving order
+    common_elements = []
+    j = 0
+    for item in original:
+        if j < len(modified) and item == modified[j]:
+            common_elements.append(item)
+            j += 1
 
-    # Initialize first row and column
-    for i in range(n + 1):
-        dp[i][0] = i  # cost of removing i elements
-    for j in range(m + 1):
-        dp[0][j] = j  # cost of inserting j elements
-
-    # Fill the dp matrix
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            if original[i-1] == modified[j-1]:
-                # If elements match, no edit needed
-                dp[i][j] = dp[i-1][j-1]
-            else:
-                # Minimum of insert, remove, or replace
-                dp[i][j] = 1 + min(
-                    dp[i-1][j],    # removal
-                    dp[i][j-1],    # insertion
-                    dp[i-1][j-1]   # replacement
-                )
-
-    # Return the minimum number of edits
-    return dp[n][m]
+    # Calculate the number of insertions/removals needed
+    return len(original) + len(modified) - 2 * len(common_elements)
