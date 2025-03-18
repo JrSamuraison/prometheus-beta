@@ -1,6 +1,5 @@
 from typing import List, Dict, Set, Tuple, Union
 from collections import deque
-import json
 
 class AhoCorasick:
     def __init__(self, patterns: List[str]):
@@ -17,7 +16,7 @@ class AhoCorasick:
         # Trie root node
         self.trie = {}
         
-        # Failure links using serialized dict as key
+        # Failure links
         self.failure_links = {}
         
         # Build the trie with the given patterns
@@ -25,26 +24,6 @@ class AhoCorasick:
         
         # Construct failure links using BFS
         self._construct_failure_links()
-    
-    def _dict_to_key(self, d: dict) -> str:
-        """
-        Convert a dictionary to a consistent unique string key.
-        
-        Args:
-            d (dict): Dictionary to convert
-        
-        Returns:
-            str: Unique string representation of the dictionary
-        """
-        # Handle non-dict and empty case
-        if not isinstance(d, dict):
-            return str(d)
-        
-        # Sort the keys to ensure consistent serialization
-        return json.dumps(
-            {k: self._dict_to_key(v) for k, v in sorted(d.items())}, 
-            sort_keys=True
-        )
     
     def _build_trie(self, patterns: List[str]):
         """
@@ -71,24 +50,20 @@ class AhoCorasick:
         Construct failure links using Breadth-First Search.
         Failure links help efficiently skip unnecessary comparisons.
         """
-        # Root's failure link is to itself
+        # Use a queue for BFS
         queue = deque()
         
-        # Initialize first level nodes
+        # First level nodes have failure link to root
         for char, subtrie in self.trie.items():
             if char != '$':
-                # Use json-serialized keys
-                subtrie_key = self._dict_to_key(subtrie)
-                trie_key = self._dict_to_key(self.trie)
-                
                 queue.append((subtrie, self.trie))
-                self.failure_links[subtrie_key] = trie_key
+                self.failure_links[subtrie] = self.trie
         
         # BFS to construct failure links
         while queue:
             current_node, parent = queue.popleft()
             
-            # Process child nodes of current node
+            # Process each character's node 
             for char, child_node in current_node.items():
                 if char == '$':
                     continue
@@ -107,40 +82,11 @@ class AhoCorasick:
                     elif failure_state is self.trie:
                         failure_state = self.trie
                         break
-                    # Try parent's failure link
-                    parent_key = self._dict_to_key(parent)
-                    failure_state = self._get_dict_from_key(
-                        self.failure_links.get(parent_key, self._dict_to_key(self.trie))
-                    )
+                    # Follow parent's failure link
+                    failure_state = self.failure_links.get(failure_state, self.trie)
                 
                 # Set failure link
-                child_key = self._dict_to_key(child_node)
-                failure_key = self._dict_to_key(failure_state)
-                self.failure_links[child_key] = failure_key
-    
-    def _get_dict_from_key(self, key: str) -> dict:
-        """
-        Retrieve the dictionary corresponding to a key.
-        This is the reverse of _dict_to_key.
-        
-        Args:
-            key (str): Serialized dictionary key
-        
-        Returns:
-            dict: Corresponding dictionary
-        """
-        # Build a list of trie dictionaries to check
-        candidates = [self.trie]
-        for char, node in self.trie.items():
-            if char != '$':
-                candidates.append(node)
-        
-        # Find the dictionary with a matching key
-        for d in candidates:
-            if self._dict_to_key(d) == key:
-                return d
-        
-        return self.trie
+                self.failure_links[child_node] = failure_state
     
     def find_matches(self, text: str) -> List[Tuple[int, str]]:
         """
@@ -155,38 +101,31 @@ class AhoCorasick:
         matches = []
         current = self.trie
         
-        # Iterate through the text
+        # Iterate through each character in the text
         for i, char in enumerate(text):
-            # Transition through the trie
-            current_key = self._dict_to_key(current)
+            # Move through valid states
             while char not in current and current is not self.trie:
-                # Move through failure links
-                current_key = self.failure_links.get(current_key, self._dict_to_key(self.trie))
-                current = self._get_dict_from_key(current_key)
+                # Follow failure link
+                current = self.failure_links.get(current, self.trie)
             
-            # Move to next state if possible
+            # Transition to next state
             if char in current:
                 current = current[char]
             else:
                 current = self.trie
             
-            # Track path to find match indices
+            # Track all patterns found in this state
             state = current
-            state_key = current_key
-            path_length = 0
-            
-            # Check for matches
             while state is not self.trie:
-                # Retrieve all patterns
+                # Check for complete patterns
                 if '$' in state:
                     pattern = state['$']
-                    # Find precise start index 
-                    # Careful: this ensures we get exact pattern start
-                    matches.append((i - len(pattern) + 1, pattern))
+                    # Calculate precise start index 
+                    # Subtract pattern length - 1 to get correct start point 
+                    start_index = i - len(pattern) + 1
+                    matches.append((start_index, pattern))
                 
-                # Follow failure link
-                state_key = self.failure_links.get(state_key, self._dict_to_key(self.trie))
-                state = self._get_dict_from_key(state_key)
-                path_length += 1
+                # Follow failure link to find additional patterns
+                state = self.failure_links.get(state, self.trie)
         
         return matches
