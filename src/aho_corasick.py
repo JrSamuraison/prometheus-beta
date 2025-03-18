@@ -132,14 +132,31 @@ class AhoCorasick:
             else:
                 current = self.root
             
-            # Check for matches from this state
+            # Check for matches from this state and its ancestors
             state = current
+            state_depth = 0
+            
+            # Count how deep we are in the current state
+            temp_state = state
+            while temp_state.parent is not None:
+                state_depth += 1
+                temp_state = temp_state.parent
+            
+            # Check for matches
             while state is not self.root:
                 # Check if this node represents end of a pattern
                 if state.pattern:
-                    matches.append((i - len(state.pattern) + 1, state.pattern))
+                    # Calculate precise start index 
+                    # Subtract the correct depth to get exact start
+                    start_index = i - state_depth
+                    matches.append((start_index, state.pattern))
                 
                 # Follow failure link
                 state = state.failure_link
+                state_depth = 0
+                temp_state = state
+                while temp_state.parent is not None:
+                    state_depth += 1
+                    temp_state = temp_state.parent
         
         return matches
