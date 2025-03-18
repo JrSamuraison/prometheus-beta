@@ -129,14 +129,15 @@ class AhoCorasick:
         Returns:
             dict: Corresponding dictionary
         """
-        # To find the correct dictionary, search through all 
-        # candidates that match the key
-        for d, k in list(map(lambda x: (x[0], self._dict_to_key(x[0])), [
-            (self.trie, self._dict_to_key(self.trie)),
-            *[(node, k) for char, node in self.trie.items() 
-              if char != '$' for k in [self._dict_to_key(node)]]
-        ]):
-            if k == key:
+        # Build a list of trie dictionaries to check
+        candidates = [self.trie]
+        for char, node in self.trie.items():
+            if char != '$':
+                candidates.append(node)
+        
+        # Find the dictionary with a matching key
+        for d in candidates:
+            if self._dict_to_key(d) == key:
                 return d
         
         return self.trie
