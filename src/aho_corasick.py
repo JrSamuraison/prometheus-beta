@@ -1,5 +1,6 @@
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict, Set, Tuple, Union
 from collections import deque
+import json
 
 class AhoCorasick:
     def __init__(self, patterns: List[str]):
@@ -16,14 +17,34 @@ class AhoCorasick:
         # Trie root node
         self.trie = {}
         
-        # Failure links for efficient matching
+        # Failure links using serialized dict as key
         self.failure_links = {}
         
         # Build the trie with the given patterns
         self._build_trie(patterns)
         
         # Construct failure links using BFS
-        self._construct_failure_links(patterns)
+        self._construct_failure_links()
+    
+    def _dict_to_key(self, d: dict) -> str:
+        """
+        Convert a dictionary to a consistent unique string key.
+        
+        Args:
+            d (dict): Dictionary to convert
+        
+        Returns:
+            str: Unique string representation of the dictionary
+        """
+        # Handle non-dict and empty case
+        if not isinstance(d, dict):
+            return str(d)
+        
+        # Sort the keys to ensure consistent serialization
+        return json.dumps(
+            {k: self._dict_to_key(v) for k, v in sorted(d.items())}, 
+            sort_keys=True
+        )
     
     def _build_trie(self, patterns: List[str]):
         """
@@ -45,13 +66,10 @@ class AhoCorasick:
             # Mark the end of a pattern
             current['$'] = pattern
     
-    def _construct_failure_links(self, patterns: List[str]):
+    def _construct_failure_links(self):
         """
         Construct failure links using Breadth-First Search.
         Failure links help efficiently skip unnecessary comparisons.
-        
-        Args:
-            patterns (List[str]): Original patterns used for reference
         """
         # Root's failure link is to itself
         queue = deque()
@@ -59,8 +77,12 @@ class AhoCorasick:
         # Initialize first level nodes
         for char, subtrie in self.trie.items():
             if char != '$':
+                # Use json-serialized keys
+                subtrie_key = self._dict_to_key(subtrie)
+                trie_key = self._dict_to_key(self.trie)
+                
                 queue.append((subtrie, self.trie))
-                self.failure_links[subtrie] = self.trie
+                self.failure_links[subtrie_key] = trie_key
         
         # BFS to construct failure links
         while queue:
@@ -86,10 +108,38 @@ class AhoCorasick:
                         failure_state = self.trie
                         break
                     # Try parent's failure link
-                    failure_state = self.failure_links.get(failure_state, self.trie)
+                    parent_key = self._dict_to_key(parent)
+                    failure_state = self._get_dict_from_key(
+                        self.failure_links.get(parent_key, self._dict_to_key(self.trie))
+                    )
                 
                 # Set failure link
-                self.failure_links[child_node] = failure_state
+                child_key = self._dict_to_key(child_node)
+                failure_key = self._dict_to_key(failure_state)
+                self.failure_links[child_key] = failure_key
+    
+    def _get_dict_from_key(self, key: str) -> dict:
+        """
+        Retrieve the dictionary corresponding to a key.
+        This is the reverse of _dict_to_key.
+        
+        Args:
+            key (str): Serialized dictionary key
+        
+        Returns:
+            dict: Corresponding dictionary
+        """
+        # To find the correct dictionary, search through all 
+        # candidates that match the key
+        for d, k in list(map(lambda x: (x[0], self._dict_to_key(x[0])), [
+            (self.trie, self._dict_to_key(self.trie)),
+            *[(node, k) for char, node in self.trie.items() 
+              if char != '$' for k in [self._dict_to_key(node)]]
+        ]):
+            if k == key:
+                return d
+        
+        return self.trie
     
     def find_matches(self, text: str) -> List[Tuple[int, str]]:
         """
@@ -107,9 +157,11 @@ class AhoCorasick:
         # Iterate through the text
         for i, char in enumerate(text):
             # Transition through the trie
+            current_key = self._dict_to_key(current)
             while char not in current and current is not self.trie:
                 # Move through failure links
-                current = self.failure_links.get(current, self.trie)
+                current_key = self.failure_links.get(current_key, self._dict_to_key(self.trie))
+                current = self._get_dict_from_key(current_key)
             
             # Move to next state if possible
             if char in current:
@@ -119,6 +171,7 @@ class AhoCorasick:
             
             # Check for matches
             state = current
+            state_key = self._dict_to_key(state)
             while state is not self.trie:
                 if '$' in state:
                     pattern = state['$']
@@ -127,6 +180,7 @@ class AhoCorasick:
                     matches.append((start_index, pattern))
                 
                 # Follow failure link
-                state = self.failure_links.get(state, self.trie)
+                state_key = self.failure_links.get(state_key, self._dict_to_key(self.trie))
+                state = self._get_dict_from_key(state_key)
         
         return matches
