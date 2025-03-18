@@ -10,7 +10,7 @@ def remove_duplicates_over_threshold(input_string: str) -> str:
     
     Examples:
         >>> remove_duplicates_over_threshold("aabbcccd")
-        'aabbcccd'
+        ''
         >>> remove_duplicates_over_threshold("aaabbbccc")
         ''
         >>> remove_duplicates_over_threshold("abcde")
@@ -20,12 +20,12 @@ def remove_duplicates_over_threshold(input_string: str) -> str:
     if not input_string:
         return ""
     
-    # Count character occurrences (case-sensitive)
+    # Count character occurrences
     char_counts = {}
     for char in input_string:
         char_counts[char] = char_counts.get(char, 0) + 1
     
-    # If any character appears 3 times, return empty string
+    # If any character appears 3 or more times, return empty string
     if any(count >= 3 for count in char_counts.values()):
         return ""
     
