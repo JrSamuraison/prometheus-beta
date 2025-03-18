@@ -25,7 +25,12 @@ def remove_duplicates_over_threshold(input_string: str) -> str:
     for char in input_string:
         char_counts[char] = char_counts.get(char, 0) + 1
     
-    # Build result string, keeping only chars that appear 1-2 times
-    result = ''.join(char for char in input_string if char_counts[char] <= 2)
+    # Build result string using an ordered dict to preserve order of first occurrence
+    result_chars = []
+    seen_chars = set()
+    for char in input_string:
+        if char_counts[char] <= 2 and char not in seen_chars:
+            result_chars.append(char)
+            seen_chars.add(char)
     
-    return result
+    return ''.join(result_chars)
