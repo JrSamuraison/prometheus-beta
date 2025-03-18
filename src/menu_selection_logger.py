@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List, Union
 
 class MenuSelectionLogger:
@@ -17,14 +18,20 @@ class MenuSelectionLogger:
         Args:
             log_file (str, optional): Path to the log file. Defaults to 'menu_selections.log'.
         """
-        # Configure logging
-        logging.basicConfig(
-            filename=log_file, 
-            level=logging.INFO, 
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
-        self.logger = logging.getLogger(__name__)
-        self.log_file = log_file
+        # Ensure log directory exists
+        os.makedirs(os.path.dirname(os.path.abspath(log_file)), exist_ok=True)
+        
+        # Configure logging with FileHandler to ensure writes
+        self.log_file = os.path.abspath(log_file)
+        file_handler = logging.FileHandler(self.log_file)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        
+        self.logger = logging.getLogger(str(id(self)))
+        self.logger.setLevel(logging.INFO)
+        
+        # Clear any existing handlers
+        self.logger.handlers.clear()
+        self.logger.addHandler(file_handler)
     
     def log_selection(self, menu_name: str, selection: Union[str, int, List[Union[str, int]]]) -> None:
         """
@@ -60,7 +67,6 @@ class MenuSelectionLogger:
         """
         with open(self.log_file, 'w'):
             pass
-        self.logger.info("Log file cleared")
     
     def get_log_contents(self) -> List[str]:
         """
