@@ -8,6 +8,16 @@ def test_lzma_compression_basic():
     compressed = lzma_compress(original_data)
     
     assert isinstance(compressed, bytes)
+    
+    decompressed = lzma_decompress(compressed)
+    assert decompressed.decode('utf-8') == original_data
+
+def test_lzma_compression_long_data():
+    """Test compression of compressible long data"""
+    original_data = "Repeat this text multiple times to make it compressible. " * 100
+    compressed = lzma_compress(original_data)
+    
+    assert isinstance(compressed, bytes)
     assert len(compressed) < len(original_data.encode('utf-8'))
     
     decompressed = lzma_decompress(compressed)
