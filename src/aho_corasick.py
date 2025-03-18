@@ -1,6 +1,36 @@
 from typing import List, Dict, Set, Tuple, Union
 from collections import deque
 
+class TrieNode:
+    def __init__(self, char: str = None, parent: 'TrieNode' = None):
+        """
+        Initialize a trie node.
+        
+        Args:
+            char (str, optional): Character represented by this node
+            parent (TrieNode, optional): Parent node in the trie
+        """
+        self.char = char
+        self.parent = parent
+        self.children = {}
+        self.pattern = None
+        self.failure_link = None
+    
+    def add_child(self, char: str) -> 'TrieNode':
+        """
+        Add a child node to the current node.
+        
+        Args:
+            char (str): Character for the child node
+        
+        Returns:
+            TrieNode: The newly created or existing child node
+        """
+        if char not in self.children:
+            new_node = TrieNode(char, self)
+            self.children[char] = new_node
+        return self.children[char]
+
 class AhoCorasick:
     def __init__(self, patterns: List[str]):
         """
@@ -13,16 +43,13 @@ class AhoCorasick:
         if not patterns or not all(isinstance(p, str) for p in patterns):
             raise ValueError("Patterns must be a non-empty list of strings")
         
-        # Trie root node
-        self.trie = {}
-        
-        # Failure links
-        self.failure_links = {}
+        # Root of the trie
+        self.root = TrieNode()
         
         # Build the trie with the given patterns
         self._build_trie(patterns)
         
-        # Construct failure links using BFS
+        # Construct failure links
         self._construct_failure_links()
     
     def _build_trie(self, patterns: List[str]):
@@ -33,60 +60,52 @@ class AhoCorasick:
             patterns (List[str]): Patterns to add to the trie
         """
         for pattern in patterns:
-            # Start at the root of the trie
-            current = self.trie
+            # Start at the root
+            current = self.root
             
             # Add each character to the trie
             for char in pattern:
-                if char not in current:
-                    current[char] = {}
-                current = current[char]
+                current = current.add_child(char)
             
-            # Mark the end of a pattern
-            current['$'] = pattern
+            # Mark end of pattern 
+            current.pattern = pattern
     
     def _construct_failure_links(self):
         """
         Construct failure links using Breadth-First Search.
         Failure links help efficiently skip unnecessary comparisons.
         """
-        # Use a queue for BFS
+        # Queue for BFS
         queue = deque()
         
         # First level nodes have failure link to root
-        for char, subtrie in self.trie.items():
-            if char != '$':
-                queue.append((subtrie, self.trie))
-                self.failure_links[subtrie] = self.trie
+        for node in self.root.children.values():
+            node.failure_link = self.root
+            queue.append(node)
         
         # BFS to construct failure links
         while queue:
-            current_node, parent = queue.popleft()
+            current = queue.popleft()
             
-            # Process each character's node 
-            for char, child_node in current_node.items():
-                if char == '$':
-                    continue
+            # Process each child of current node
+            for char, child in current.children.items():
+                queue.append(child)
                 
-                # Add to queue for further processing
-                queue.append((child_node, current_node))
+                # Start with the node's parent's failure link
+                failure_state = current.failure_link
                 
-                # Find failure link for this node
-                failure_state = parent
+                # Find the longest proper suffix
                 while True:
-                    # Try to find a matching path
-                    if char in failure_state and failure_state is not self.trie:
-                        failure_state = failure_state[char]
+                    # Check if failure state has a valid transition
+                    if char in failure_state.children and failure_state.children[char] is not child:
+                        child.failure_link = failure_state.children[char]
                         break
-                    # If root is reached, stay at root
-                    elif failure_state is self.trie:
-                        failure_state = self.trie
+                    # If we reach the root, link to root
+                    elif failure_state is self.root:
+                        child.failure_link = self.root
                         break
-                    # Follow parent's failure link
-                    failure_state = self.failure_links.get(failure_state, self.trie)
-                
-                # Set failure link
-                self.failure_links[child_node] = failure_state
+                    # Go to failure state's failure link
+                    failure_state = failure_state.failure_link
     
     def find_matches(self, text: str) -> List[Tuple[int, str]]:
         """
@@ -99,33 +118,28 @@ class AhoCorasick:
             List[Tuple[int, str]]: List of (start_index, matched_pattern) tuples
         """
         matches = []
-        current = self.trie
+        current = self.root
         
-        # Iterate through each character in the text
+        # Iterate through the text
         for i, char in enumerate(text):
-            # Move through valid states
-            while char not in current and current is not self.trie:
-                # Follow failure link
-                current = self.failure_links.get(current, self.trie)
+            # Find appropriate state
+            while char not in current.children and current is not self.root:
+                current = current.failure_link
             
-            # Transition to next state
-            if char in current:
-                current = current[char]
+            # Try to move to next state
+            if char in current.children:
+                current = current.children[char]
             else:
-                current = self.trie
+                current = self.root
             
-            # Track all patterns found in this state
+            # Check for matches from this state
             state = current
-            while state is not self.trie:
-                # Check for complete patterns
-                if '$' in state:
-                    pattern = state['$']
-                    # Calculate precise start index 
-                    # Subtract pattern length - 1 to get correct start point 
-                    start_index = i - len(pattern) + 1
-                    matches.append((start_index, pattern))
+            while state is not self.root:
+                # Check if this node represents end of a pattern
+                if state.pattern:
+                    matches.append((i - len(state.pattern) + 1, state.pattern))
                 
-                # Follow failure link to find additional patterns
-                state = self.failure_links.get(state, self.trie)
+                # Follow failure link
+                state = state.failure_link
         
         return matches
