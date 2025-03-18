@@ -50,7 +50,7 @@ def test_create_file_backup_custom_directory():
             with open(temp_file_path, 'r') as orig, open(backup_path, 'r') as backup:
                 assert orig.read() == backup.read()
         finally:
-            # Clean up is handled by tempfile and tempdir contexts
+            pass  # Clean up is handled by tempfile and tempdir contexts
 
 def test_create_file_backup_nonexistent_file():
     with pytest.raises(FileNotFoundError):
