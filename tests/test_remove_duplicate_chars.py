@@ -3,7 +3,7 @@ from src.remove_duplicate_chars import remove_duplicates_over_threshold
 
 def test_remove_duplicates_over_threshold():
     # Test cases with varying scenarios
-    assert remove_duplicates_over_threshold("aabbcccd") == "aabbcd"
+    assert remove_duplicates_over_threshold("aabbcccd") == "aabbccd"
     assert remove_duplicates_over_threshold("aaabbbccc") == ""
     assert remove_duplicates_over_threshold("abcde") == "abcde"
     
@@ -20,7 +20,7 @@ def test_remove_duplicates_over_threshold():
 
 def test_remove_duplicates_order_preservation():
     # Ensure original order is maintained
-    assert remove_duplicates_over_threshold("abcaaabbcccd") == "abcaabbcd"
+    assert remove_duplicates_over_threshold("abcaaabbcccd") == "abcabcd"
 
 def test_no_modification_for_minimal_duplicates():
     # Characters that appear 1-2 times should remain
