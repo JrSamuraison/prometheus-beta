@@ -73,7 +73,7 @@ def kruskal_mst(graph):
         return []
 
     # Sort edges by weight in ascending order
-    edges = sorted(graph, key=lambda x: x[0])
+    edges = sorted(graph, key=lambda x: (x[0], x[1], x[2]))
     
     # Number of vertices is the max vertex index + 1
     vertices = max(max(edge[1], edge[2]) for edge in graph) + 1
@@ -84,16 +84,20 @@ def kruskal_mst(graph):
     # Minimum Spanning Tree storage
     mst = []
     
+    # Track visited vertices to handle disconnected graphs
+    visited_vertices = set()
+    
     # Kruskal's algorithm
     for edge in edges:
         weight, u, v = edge
         
+        # Optimize for disconnected graphs
+        if len(mst) > vertices - 1:
+            break
+        
         # If including this edge doesn't create a cycle, add it to MST
         if ds.union(u, v):
             mst.append(edge)
-        
-        # Stop when MST is complete (vertices - 1 edges)
-        if len(mst) == vertices - 1:
-            break
+            visited_vertices.update([u, v])
     
     return mst
