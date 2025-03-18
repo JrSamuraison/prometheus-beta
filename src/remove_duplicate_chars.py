@@ -20,10 +20,11 @@ def remove_duplicates_over_threshold(input_string: str) -> str:
     if not input_string:
         return ""
     
-    # Count character occurrences
-    char_counts = {}
+    # Count character occurrences (case-sensitive)
+    from collections import defaultdict
+    char_counts = defaultdict(int)
     for char in input_string:
-        char_counts[char] = char_counts.get(char, 0) + 1
+        char_counts[char.lower()] += 1
     
     # If any character appears 3 or more times, return empty string
     if any(count >= 3 for count in char_counts.values()):
