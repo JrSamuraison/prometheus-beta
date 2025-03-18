@@ -21,15 +21,12 @@ def remove_duplicates_over_threshold(input_string: str) -> str:
         return ""
     
     # Count character occurrences
-    result_chars = []
     char_counts = {}
-    
     for char in input_string:
-        # Keep character if its count is less than 3
-        if char_counts.get(char, 0) < 2:
-            result_chars.append(char)
-        
-        # Update character count, track each character
         char_counts[char] = char_counts.get(char, 0) + 1
     
-    return ''.join(result_chars)
+    # If any character appears more than twice, return empty string
+    if any(count > 2 for count in char_counts.values()):
+        return ""
+    
+    return input_string
