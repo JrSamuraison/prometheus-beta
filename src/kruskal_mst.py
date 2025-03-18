@@ -84,9 +84,6 @@ def kruskal_mst(graph):
     # Minimum Spanning Tree storage
     mst = []
     
-    # Track connected component roots
-    connected_roots = set()
-    
     # Kruskal's algorithm
     for edge in edges:
         weight, u, v = edge
@@ -94,10 +91,9 @@ def kruskal_mst(graph):
         # If including this edge doesn't create a cycle, add it to MST
         if ds.union(u, v):
             mst.append(edge)
-            connected_roots.add(ds.find(u))
-            
-            # Reduce complexity for disconnected graphs
-            if len(connected_roots) == 1:
-                break
+        
+        # Stop when MST is complete (vertices - 1 edges)
+        if len(mst) == vertices - 1:
+            break
     
     return mst
