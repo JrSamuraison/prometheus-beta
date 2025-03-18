@@ -47,14 +47,31 @@ def generate_fibonacci_square_pairs(n):
     # Generate subsequent elements
     while len(sequence) < n:
         # Potential next element
-        next_num = sequence[-1] + sequence[-2]
+        candidates = [
+            sequence[-1] + sequence[-2],  # Standard next Fibonacci-like element
+            sequence[-1] * 2,  # Alternate growth strategy
+            sequence[-1] + 1   # Conservative growth
+        ]
         
-        # Ensure the sum of the last two consecutive pairs is a perfect square
-        if is_perfect_square(sequence[-2] + sequence[-1]):
-            sequence.append(next_num)
-        else:
-            # If no suitable next number is found, break to prevent infinite loop
+        found_candidate = False
+        for candidate in candidates:
+            # Check if this candidate maintains the square pair sum property
+            temp_sequence = sequence + [candidate]
+            if is_perfect_square(temp_sequence[-2] + temp_sequence[-1]):
+                sequence.append(candidate)
+                found_candidate = True
+                break
+        
+        # If no suitable candidate found, use the default growth
+        if not found_candidate:
+            sequence.append(candidates[0])
+        
+        # Prevent infinite loop
+        if len(sequence) > n * 2:
             break
     
-    # Truncate or pad the sequence to exactly n elements
+    # Pad or truncate sequence to exactly n elements
+    while len(sequence) < n:
+        sequence.append(sequence[-1] + sequence[-2])
+    
     return sequence[:n]
