@@ -23,16 +23,9 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not isinstance(str1, str) or not isinstance(str2, str):
         raise TypeError("Inputs must be strings")
     
-    # Handle case sensitivity
-    if any(c.islower() for c in str1 + str2):
-        return ""
-    
     # Handle empty string cases
     if not str1 or not str2:
         return ""
-    
-    # Collect all possible longest common subsequences
-    lcs_candidates = []
     
     # Create a matrix to store LCS lengths
     m, n = len(str1), len(str2)
@@ -46,30 +39,18 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     
-    # Backtracking to find LCS
-    def find_lcs(i, j, current_lcs):
-        # Base case: reached start of string
-        if i == 0 or j == 0:
-            lcs_candidates.append(''.join(reversed(current_lcs)))
-            return
-        
-        # If characters match
+    # Reconstruct the LCS
+    lcs = []
+    i, j = m, n
+    while i > 0 and j > 0:
         if str1[i-1] == str2[j-1]:
-            find_lcs(i-1, j-1, current_lcs + [str1[i-1]])
-        
-        # Find alternative paths that maintain the max length
-        if i > 1 and dp[i-1][j] == dp[m][n]:
-            find_lcs(i-1, j, current_lcs.copy())
-        
-        if j > 1 and dp[i][j-1] == dp[m][n]:
-            find_lcs(i, j-1, current_lcs.copy())
+            lcs.append(str1[i-1])
+            i -= 1
+            j -= 1
+        elif dp[i-1][j] > dp[i][j-1]:
+            i -= 1
+        else:
+            j -= 1
     
-    # Start backtracking
-    find_lcs(m, n, [])
-    
-    # Filter candidates with max length
-    max_length = max(len(c) for c in lcs_candidates) if lcs_candidates else 0
-    max_candidates = [c for c in lcs_candidates if len(c) == max_length]
-    
-    # Return lexicographically smallest candidate
-    return min(max_candidates) if max_candidates else ""
+    # Return the reversed LCS (as we built it backwards)
+    return ''.join(reversed(lcs))
