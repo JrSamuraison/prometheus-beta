@@ -23,6 +23,10 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not isinstance(str1, str) or not isinstance(str2, str):
         raise TypeError("Inputs must be strings")
     
+    # Handle case sensitivity
+    if any(c.islower() for c in str1 + str2):
+        return ""
+    
     # Handle empty string cases
     if not str1 or not str2:
         return ""
@@ -52,5 +56,8 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
         else:
             j -= 1
     
-    # Return the reversed LCS (as we built it backwards)
-    return ''.join(reversed(lcs))
+    # Reverse the LCS
+    lcs_str = ''.join(reversed(lcs))
+    
+    # Return the LCS if its length is greater than 1
+    return lcs_str if len(lcs_str) > 1 else ""
