@@ -26,7 +26,7 @@ def find_most_frequent_char(input_string):
     if len(input_string) == 0:
         return None
     
-    # Count character frequencies
+    # Count character frequencies (case-sensitive)
     char_count = {}
     for char in input_string:
         char_count[char] = char_count.get(char, 0) + 1
