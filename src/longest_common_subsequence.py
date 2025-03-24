@@ -23,6 +23,10 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not isinstance(str1, str) or not isinstance(str2, str):
         raise TypeError("Inputs must be strings")
     
+    # Handle case sensitivity 
+    if any(c.islower() for c in str1 + str2):
+        return ""
+    
     # Handle empty string cases
     if not str1 or not str2:
         return ""
@@ -38,6 +42,10 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
                 dp[i][j] = dp[i-1][j-1] + 1
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+    
+    # If no substantial common subsequence
+    if dp[m][n] <= 1:
+        return ""
     
     # Reconstruct the LCS
     lcs = []
