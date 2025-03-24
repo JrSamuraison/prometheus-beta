@@ -43,20 +43,28 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     
+    # Possible LCS
+    candidates = []
+    
     # Reconstruct the LCS
-    lcs = []
-    i, j = m, n
-    while i > 0 and j > 0:
+    def backtrack(i, j, current_lcs):
+        if i == 0 or j == 0:
+            candidates.append(''.join(reversed(current_lcs)))
+            return
+        
         if str1[i-1] == str2[j-1]:
-            lcs.append(str1[i-1])
-            i -= 1
-            j -= 1
-        elif dp[i-1][j] > dp[i][j-1]:
-            i -= 1
-        else:
-            j -= 1
+            backtrack(i-1, j-1, current_lcs + [str1[i-1]])
+        
+        if i > 1 and dp[i-1][j] == dp[m][n]:
+            backtrack(i-1, j, current_lcs.copy())
+        
+        if j > 1 and dp[i][j-1] == dp[m][n]:
+            backtrack(i, j-1, current_lcs.copy())
     
-    # Return the reversed LCS (as we built it backwards)
-    lcs_str = ''.join(reversed(lcs))
+    backtrack(m, n, [])
     
-    return lcs_str if lcs_str else ""
+    # Filter candidates with max length and return lexicographically first
+    max_length = max(len(c) for c in candidates) if candidates else 0
+    max_candidates = [c for c in candidates if len(c) == max_length]
+    
+    return min(max_candidates) if max_candidates else ""
