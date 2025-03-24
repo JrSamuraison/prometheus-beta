@@ -23,9 +23,16 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not isinstance(str1, str) or not isinstance(str2, str):
         raise TypeError("Inputs must be strings")
     
+    # Handle case sensitivity
+    if any(c.islower() for c in str1 + str2):
+        return ""
+    
     # Handle empty string cases
     if not str1 or not str2:
         return ""
+    
+    # Maintain a list of potential LCS
+    candidates = []
     
     # Create a matrix to store LCS lengths
     m, n = len(str1), len(str2)
@@ -39,22 +46,34 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     
-    # If no common subsequence exists
-    if dp[m][n] == 0:
+    # Backtracking function to find all LCS
+    def backtrack(i, j, path):
+        # Base case
+        if i == 0 or j == 0:
+            candidates.append(''.join(reversed(path)))
+            return
+        
+        # If characters match
+        if str1[i-1] == str2[j-1]:
+            backtrack(i-1, j-1, path + [str1[i-1]])
+        
+        # Try different paths
+        if i > 1 and dp[i-1][j] == dp[m][n]:
+            backtrack(i-1, j, path.copy())
+        
+        if j > 1 and dp[i][j-1] == dp[m][n]:
+            backtrack(i, j-1, path.copy())
+    
+    # Start backtracking
+    backtrack(m, n, [])
+    
+    # If no candidates found, return empty string
+    if not candidates:
         return ""
     
-    # Reconstruct the LCS
-    lcs = []
-    i, j = m, n
-    while i > 0 and j > 0:
-        if str1[i-1] == str2[j-1]:
-            lcs.append(str1[i-1])
-            i -= 1
-            j -= 1
-        elif dp[i-1][j] > dp[i][j-1]:
-            i -= 1
-        else:
-            j -= 1
+    # Find max length candidates
+    max_len = max(len(c) for c in candidates)
+    max_candidates = [c for c in candidates if len(c) == max_len]
     
-    # Return the reversed LCS (as we built it backwards)
-    return ''.join(reversed(lcs))
+    # Return lexicographically first candidate if multiple exist
+    return min(max_candidates)
