@@ -27,8 +27,8 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not str1 or not str2:
         return ""
     
-    # Ensure exact case matching
-    if any(c.islower() for c in str1 + str2):
+    # Strictly enforce uppercase
+    if not (str1.isupper() and str2.isupper()):
         return ""
     
     # Create a matrix to store LCS lengths
@@ -43,27 +43,20 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     
-    # If no common subsequence exists
-    if dp[m][n] == 0:
-        return ""
-    
-    # Reconstruct the LCS using all possible LCS
-    possible_lcs = []
-    def backtrack(i, j, current):
-        if i == 0 or j == 0:
-            possible_lcs.append(''.join(reversed(current)))
-            return
-        
+    # Reconstruct the LCS
+    lcs = []
+    i, j = m, n
+    while i > 0 and j > 0:
         if str1[i-1] == str2[j-1]:
-            backtrack(i-1, j-1, current + [str1[i-1]])
-        
-        if i > 1 and dp[i-1][j] == dp[m][n]:
-            backtrack(i-1, j, current.copy())
-        
-        if j > 1 and dp[i][j-1] == dp[m][n]:
-            backtrack(i, j-1, current.copy())
+            lcs.append(str1[i-1])
+            i -= 1
+            j -= 1
+        elif dp[i-1][j] > dp[i][j-1]:
+            i -= 1
+        else:
+            j -= 1
     
-    backtrack(m, n, [])
+    # Return the reversed LCS (as we built it backwards)
+    lcs_str = ''.join(reversed(lcs))
     
-    # Find the lexicographically smallest longest subsequence
-    return max(possible_lcs, key=len, default="")
+    return lcs_str if lcs_str else ""
