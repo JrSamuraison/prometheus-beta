@@ -35,5 +35,5 @@ def test_find_most_frequent_char_invalid_input():
 
 def test_find_most_frequent_char_case_sensitive():
     """Test that the function is case-sensitive."""
-    assert find_most_frequent_char("HelLo") == 'l'
-    assert find_most_frequent_char("HeLLo") == 'l'
+    assert find_most_frequent_char("HHHello") == 'H'
+    assert find_most_frequent_char("HelHLo") == 'H'
