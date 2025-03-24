@@ -27,10 +27,6 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
     if not str1 or not str2:
         return ""
     
-    # Strictly enforce uppercase
-    if not (str1.isupper() and str2.isupper()):
-        return ""
-    
     # Create a matrix to store LCS lengths
     m, n = len(str1), len(str2)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -43,28 +39,22 @@ def longest_common_subsequence(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     
-    # Possible LCS
-    candidates = []
+    # If no common subsequence exists
+    if dp[m][n] == 0:
+        return ""
     
     # Reconstruct the LCS
-    def backtrack(i, j, current_lcs):
-        if i == 0 or j == 0:
-            candidates.append(''.join(reversed(current_lcs)))
-            return
-        
+    lcs = []
+    i, j = m, n
+    while i > 0 and j > 0:
         if str1[i-1] == str2[j-1]:
-            backtrack(i-1, j-1, current_lcs + [str1[i-1]])
-        
-        if i > 1 and dp[i-1][j] == dp[m][n]:
-            backtrack(i-1, j, current_lcs.copy())
-        
-        if j > 1 and dp[i][j-1] == dp[m][n]:
-            backtrack(i, j-1, current_lcs.copy())
+            lcs.append(str1[i-1])
+            i -= 1
+            j -= 1
+        elif dp[i-1][j] > dp[i][j-1]:
+            i -= 1
+        else:
+            j -= 1
     
-    backtrack(m, n, [])
-    
-    # Filter candidates with max length and return lexicographically first
-    max_length = max(len(c) for c in candidates) if candidates else 0
-    max_candidates = [c for c in candidates if len(c) == max_length]
-    
-    return min(max_candidates) if max_candidates else ""
+    # Return the reversed LCS (as we built it backwards)
+    return ''.join(reversed(lcs))
