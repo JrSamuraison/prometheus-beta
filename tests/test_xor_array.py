@@ -26,12 +26,12 @@ def test_xor_array_non_integer_elements():
 
 def test_xor_array_large_numbers():
     """Test XOR with larger numbers"""
-    assert xor_array_elements([10, 20, 30]) == 20
+    assert xor_array_elements([10, 20, 30]) == 0  # 10 ^ 20 ^ 30 = 0
 
 def test_xor_array_repetitive_elements():
     """Test XOR with repetitive elements"""
-    assert xor_array_elements([1, 1, 1, 1]) == 1
+    assert xor_array_elements([1, 1, 1, 1]) == 0  # Any number XOR with itself is 0
 
 def test_xor_array_negative_numbers():
     """Test XOR with negative numbers"""
-    assert xor_array_elements([-1, -2, -3]) == 0
+    assert xor_array_elements([-1, -2, -3]) == -4  # Actual bitwise XOR result
