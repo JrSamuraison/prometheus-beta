@@ -40,19 +40,30 @@ def test_delete_file_with_special_characters():
 
 def test_delete_readonly_file():
     """Test deleting a read-only file"""
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_path = temp_file.name
-        temp_file.write(b"Test content")
-        temp_file.close()
+    # Create a temporary file
+    temp_file_path = os.path.join(tempfile.gettempdir(), "readonly_test_file.txt")
+    
+    try:
+        # Create the file and write some content
+        with open(temp_file_path, 'w') as f:
+            f.write("Test content")
         
         # Make the file read-only for current user
-        os.chmod(temp_path, 0o400)
+        os.chmod(temp_file_path, 0o400)
         
+        # Attempt to delete and expect a PermissionError
+        with pytest.raises(PermissionError):
+            delete_file(temp_file_path)
+    
+    finally:
+        # Restore permissions to allow cleanup
         try:
-            with pytest.raises(PermissionError):
-                delete_file(temp_path)
-        finally:
-            # Restore permissions to allow cleanup
-            os.chmod(temp_path, 0o666)
-            if os.path.exists(temp_path):
-                os.unlink(temp_path)
+            os.chmod(temp_file_path, 0o666)
+        except OSError:
+            pass
+        
+        # Remove the temporary file if it exists
+        try:
+            os.unlink(temp_file_path)
+        except OSError:
+            pass
