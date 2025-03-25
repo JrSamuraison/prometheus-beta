@@ -1,3 +1,5 @@
+import re
+
 def find_longest_word(sentence):
     """
     Find the longest word in a given sentence.
@@ -18,11 +20,12 @@ def find_longest_word(sentence):
         raise TypeError("Input must be a string")
     
     # Remove leading/trailing whitespace and split the sentence
-    words = sentence.strip().split()
+    # Use regex to split on whitespace and remove punctuation
+    words = re.findall(r'\b\w+\b', sentence)
     
-    # Check for empty input after stripping
+    # Check for empty input after splitting
     if not words:
         raise ValueError("Input sentence must contain at least one word")
     
-    # Find the longest word 
+    # Find the longest word maintaining the original order
     return max(words, key=len)
