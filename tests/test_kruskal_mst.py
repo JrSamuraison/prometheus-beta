@@ -75,7 +75,8 @@ def test_kruskal_mst_disconnected_graph():
     edges = [
         (0, 1, 1),    # Component 1
         (2, 3, 2),    # Component 2
-        (0, 2, 3)     # Connects components
+        (0, 2, 3),    # Connects components
+        (3, 4, 4)     # Ensure all vertices are covered
     ]
     
     mst = kruskal_mst(vertices, edges)
