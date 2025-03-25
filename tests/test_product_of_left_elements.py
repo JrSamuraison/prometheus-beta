@@ -15,11 +15,11 @@ def test_single_element():
 
 def test_list_with_zero():
     """Test list containing zero"""
-    assert product_of_left_elements([1, 0, 2, 3]) == [1, 0, 0, 0]
+    assert product_of_left_elements([1, 0, 2, 3]) == [1, 1, 0, 0]
 
 def test_negative_numbers():
     """Test list with negative numbers"""
-    assert product_of_left_elements([-1, 2, -3, 4]) == [1, -1, -2, -6]
+    assert product_of_left_elements([-1, 2, -3, 4]) == [1, -1, -2, 6]
 
 def test_float_numbers():
     """Test list with float numbers"""
