@@ -34,4 +34,9 @@ def contains_palindrome_word(input_string: str) -> bool:
         if len(alphanumeric_word) > 1 and alphanumeric_word == alphanumeric_word[::-1]:
             return True
     
+    # Check if the entire clean string is a palindrome
+    clean_full_string = ''.join(char for char in clean_string.replace(' ', '') if char.isalnum())
+    if len(clean_full_string) > 1 and clean_full_string == clean_full_string[::-1]:
+        return True
+    
     return False
