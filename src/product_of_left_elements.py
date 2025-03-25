@@ -34,7 +34,9 @@ def product_of_left_elements(arr):
     result = [1] * len(arr)
     
     # Calculate left product for each element
+    left_product = 1
     for i in range(1, len(arr)):
-        result[i] = result[i-1] * arr[i-1]
+        left_product *= arr[i-1]
+        result[i] = left_product
     
     return result
