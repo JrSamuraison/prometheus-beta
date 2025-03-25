@@ -1,5 +1,6 @@
 import os
 import logging
+import stat
 
 def delete_file(file_path):
     """
@@ -29,10 +30,17 @@ def delete_file(file_path):
         if not os.path.isfile(normalized_path):
             raise IsADirectoryError(f"Path is not a file: {file_path}")
         
-        # Check for write permissions (using access to check before attempting)
-        dir_path = os.path.dirname(normalized_path)
-        if not os.access(dir_path, os.W_OK) or not os.access(normalized_path, os.W_OK):
+        # Get file stats
+        file_stats = os.stat(normalized_path)
+        
+        # Check file permissions explicitly
+        if not bool(file_stats.st_mode & stat.S_IWUSR):
             raise PermissionError(f"No write permission for file: {file_path}")
+        
+        # Check directory write permissions
+        dir_path = os.path.dirname(normalized_path)
+        if not os.access(dir_path, os.W_OK):
+            raise PermissionError(f"No write permission for directory: {dir_path}")
         
         # Attempt to delete the file
         os.remove(normalized_path)
