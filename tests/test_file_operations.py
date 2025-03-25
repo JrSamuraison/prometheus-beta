@@ -45,12 +45,14 @@ def test_delete_readonly_file():
         temp_file.write(b"Test content")
         temp_file.close()
         
-        # Make the file read-only
-        os.chmod(temp_path, 0o444)
+        # Make the file read-only for current user
+        os.chmod(temp_path, 0o400)
         
-        with pytest.raises(PermissionError):
-            delete_file(temp_path)
-        
-        # Restore permissions to allow cleanup
-        os.chmod(temp_path, 0o666)
-        os.unlink(temp_path)
+        try:
+            with pytest.raises(PermissionError):
+                delete_file(temp_path)
+        finally:
+            # Restore permissions to allow cleanup
+            os.chmod(temp_path, 0o666)
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
