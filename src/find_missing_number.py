@@ -19,8 +19,14 @@ def find_missing_number(nums):
     if not nums:
         raise ValueError("Input array cannot be empty")
     
-    # Calculate the expected sum of numbers from 1 to n
+    # Calculate the expected length
     n = len(nums) + 1  # Total number of elements including the missing number
+    
+    # Validate that all numbers are within the expected range
+    if any(num < 1 or num > n for num in nums):
+        raise ValueError("Invalid input: numbers are not in range 1 to n")
+    
+    # Calculate the expected sum of numbers from 1 to n
     expected_sum = (n * (n + 1)) // 2
     
     # Calculate the actual sum of the given array
@@ -28,9 +34,5 @@ def find_missing_number(nums):
     
     # The difference is the missing number
     missing_number = expected_sum - actual_sum
-    
-    # Validate the result is within the expected range
-    if missing_number < 1 or missing_number > n:
-        raise ValueError("Invalid input: numbers are not in range 1 to n")
     
     return missing_number
