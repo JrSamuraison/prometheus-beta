@@ -26,9 +26,13 @@ def fibonacci_reverse(n):
         return [0]
     
     # Generate Fibonacci sequence
+    a, b = 0, 1
     fib_sequence = [0, 1]
+    
+    # Continue generating Fibonacci numbers
     while len(fib_sequence) < n:
-        fib_sequence.append(fib_sequence[-1] + fib_sequence[-2])
+        a, b = b, a + b
+        fib_sequence.append(b)
     
     # Return sequence up to nth element in reverse order
     return list(reversed(fib_sequence[:n]))
