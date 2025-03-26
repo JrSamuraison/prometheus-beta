@@ -2,10 +2,6 @@ def calculate_min_max_average(numbers):
     """
     Calculate the average of the three smallest and three largest numbers in a given array.
     
-    The function selects the three smallest and three largest numbers, calculates
-    the mean of the smallest three as one average, the mean of the largest three 
-    as another average, then returns the mean of those two averages.
-    
     Args:
         numbers (list): A list of six real numbers.
     
@@ -26,11 +22,5 @@ def calculate_min_max_average(numbers):
     smallest_three = sorted_numbers[:3]
     largest_three = sorted_numbers[3:]
     
-    # Calculate average of smallest three
-    smallest_avg = sum(smallest_three) / 3
-    
-    # Calculate average of largest three
-    largest_avg = sum(largest_three) / 3
-    
-    # Return the average of the two averages
-    return (smallest_avg + largest_avg) / 2
+    # Calculate and return the average
+    return (sum(smallest_three) + sum(largest_three)) / 2
