@@ -15,11 +15,11 @@ def test_fibonacci_reverse_two():
 
 def test_fibonacci_reverse_five():
     """Test generating 5 Fibonacci numbers."""
-    assert fibonacci_reverse(5) == [5, 3, 2, 1, 0]
+    assert fibonacci_reverse(5) == [3, 2, 1, 1, 0]
 
 def test_fibonacci_reverse_ten():
     """Test generating 10 Fibonacci numbers."""
-    expected = [55, 34, 21, 13, 8, 5, 3, 2, 1, 0]
+    expected = [34, 21, 13, 8, 5, 3, 2, 1, 1, 0]
     assert fibonacci_reverse(10) == expected
 
 def test_fibonacci_reverse_negative_input():
