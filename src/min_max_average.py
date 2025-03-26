@@ -23,4 +23,4 @@ def calculate_min_max_average(numbers):
     largest_three = sorted_numbers[3:]
     
     # Calculate and return the average
-    return (sum(smallest_three) + sum(largest_three)) / 2
+    return (sum(smallest_three) / 3 + sum(largest_three) / 3) / 2
