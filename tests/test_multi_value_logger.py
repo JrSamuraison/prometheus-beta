@@ -24,13 +24,26 @@ class TestMultiValueLogger:
             assert f"Test 42 None" in caplog.text
             assert caplog.records[0].levelno == getattr(logging, level.upper())
 
-    def test_custom_logger(self, caplog):
+    def test_custom_logger(self):
         """Test logging with a custom logger"""
         custom_logger = logging.getLogger('custom_logger')
-        caplog.set_level(logging.INFO, logger=custom_logger)
-        
+        custom_logger.setLevel(logging.INFO)
+
+        # Create a handler to capture logs from the custom logger
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        custom_logger.addHandler(handler)
+
+        # Redirect handler output to a string
+        import io
+        log_capture = io.StringIO()
+        handler.stream = log_capture
+
+        # Log using the custom logger
         log_multiple_values("Custom", "Logger", logger=custom_logger)
-        assert "Custom Logger" in caplog.text
+        log_output = log_capture.getvalue()
+
+        assert "Custom Logger" in log_output
 
     def test_invalid_log_level(self):
         """Test that an invalid log level raises a ValueError"""
