@@ -18,13 +18,13 @@ def test_february_non_leap_year():
 
 def test_month_with_31_days():
     """Test a month with 31 days."""
-    # March 2023 has 10 weekend days
-    assert count_weekends_in_month(2023, 3) == 10
+    # March 2023 has 8 weekend days
+    assert count_weekends_in_month(2023, 3) == 8
 
 def test_month_with_30_days():
     """Test a month with 30 days."""
-    # April 2023 has 8 weekend days
-    assert count_weekends_in_month(2023, 4) == 8
+    # April 2023 has 10 weekend days
+    assert count_weekends_in_month(2023, 4) == 10
 
 def test_invalid_month_low():
     """Test handling of invalid low month input."""
