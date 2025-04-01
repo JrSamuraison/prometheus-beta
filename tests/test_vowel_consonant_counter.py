@@ -19,7 +19,7 @@ def test_empty_string():
 def test_special_characters():
     """Test string with special characters and spaces."""
     result = count_vowels_consonants("hello, world! 123")
-    assert result == {'vowels': 3, 'consonants': 3}
+    assert result == {'vowels': 3, 'consonants': 7}
 
 def test_only_vowels():
     """Test a string with only vowels."""
