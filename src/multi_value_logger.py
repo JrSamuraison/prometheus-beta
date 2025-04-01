@@ -1,7 +1,7 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
-def log_multiple_values(*values: Any, level: str = 'info', logger: logging.Logger = None) -> None:
+def log_multiple_values(*values: Any, level: str = 'info', logger: Optional[logging.Logger] = None) -> None:
     """
     Log multiple values in a single statement with flexible logging options.
 
@@ -21,6 +21,10 @@ def log_multiple_values(*values: Any, level: str = 'info', logger: logging.Logge
         >>> log_multiple_values("Error", 42, level='error')
         # Logs: "Error 42" at ERROR level
     """
+    # Exit early if no values are provided
+    if not values:
+        return
+
     # Select the logger
     target_logger = logger or logging.getLogger()
 
