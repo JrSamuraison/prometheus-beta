@@ -14,7 +14,7 @@ def test_single_length_rod():
 def test_full_rod_length():
     """Test rod cutting for the full length of the price list"""
     prices = [1, 5, 8, 9, 10, 17, 17, 20]
-    assert rod_cutting(prices, 8) == 20
+    assert rod_cutting(prices, 8) == 22  # Updated to match optimal solution
 
 def test_zero_length_rod():
     """Test rod cutting for zero length"""
@@ -34,4 +34,4 @@ def test_empty_prices():
 def test_complex_rod_cutting():
     """Test a more complex rod cutting scenario"""
     prices = [3, 5, 8, 9, 10, 17, 17, 20]
-    assert rod_cutting(prices, 4) == 10  # Different prices might yield different result
+    assert rod_cutting(prices, 4) == 12  # Updated to match optimal solution
