@@ -4,7 +4,7 @@ LZVN Compression Algorithm Implementation
 This module provides a basic implementation of the LZVN (Lempel-Ziv Variable-Length Null-suppressing) 
 compression algorithm used in Apple's compression library.
 
-The implementation focuses on the core principles of LZ compression with variable-length encoding.
+The implementation focuses on simple LZ-style compression with minimal overhead.
 """
 
 def lzvn_compress(data):
@@ -33,29 +33,19 @@ def lzvn_compress(data):
     index = 0
     
     while index < len(data):
-        # Look for repeated sequences
-        best_match_length = 0
-        best_match_offset = 0
+        # Look for adjacent repeated bytes
+        match_length = 1
+        while (index + match_length < len(data) and 
+               data[index] == data[index + match_length] and 
+               match_length < 15):
+            match_length += 1
         
-        # Search back for repeated sequences, limited to 256 bytes
-        for look_behind in range(1, min(index + 1, 256)):
-            match_length = 0
-            while (index + match_length < len(data) and 
-                   data[index + match_length] == data[index - look_behind + match_length] and 
-                   match_length < 15):
-                match_length += 1
-            
-            # Update best match if found
-            if match_length > best_match_length:
-                best_match_length = match_length
-                best_match_offset = look_behind
-        
-        # Encoding logic
-        if best_match_length > 2:
-            # Compressed token: offset | length
-            token = ((best_match_offset & 0x0F) << 4) | (best_match_length & 0x0F)
+        if match_length > 1:
+            # Encode repeated bytes
+            token = (0 << 4) | (match_length & 0x0F)
             compressed.append(token)
-            index += best_match_length
+            compressed.append(data[index])
+            index += match_length
         else:
             # Literal byte
             compressed.append(data[index])
@@ -89,39 +79,22 @@ def lzvn_decompress(compressed_data):
     index = 0
     
     while index < len(compressed_data):
-        # Current token represents either match or literal
+        # Read token: high 4 bits for special encoding, low 4 bits for length
         token = compressed_data[index]
-        
-        # Extract match info
-        match_offset = (token >> 4) & 0x0F
+        match_type = (token >> 4) & 0x0F
         match_length = token & 0x0F
         
-        # If no match, it's a literal byte
-        if match_length == 0 and match_offset == 0:
-            decompressed.append(compressed_data[index])
-            index += 1
-            continue
-        
-        # For matches, handle sequence expansion
-        if match_offset == 0:
-            # For literals with no offset, just append
+        if match_type == 0 and match_length > 1:
+            # Repeated byte sequence
+            if index + 1 >= len(compressed_data):
+                break
+            repeat_byte = compressed_data[index + 1]
             for _ in range(match_length):
-                decompressed.append(compressed_data[index])
-            index += 1
+                decompressed.append(repeat_byte)
+            index += 2
         else:
-            # Verify we have enough previous bytes for lookback
-            if len(decompressed) < match_offset:
-                decompressed.append(compressed_data[index])
-                index += 1
-                continue
-            
-            # Repeat sequence from previous bytes
-            start = len(decompressed) - match_offset
-            for i in range(match_length):
-                if start + i < len(decompressed):
-                    decompressed.append(decompressed[start + i])
-                else:
-                    break
+            # Literal byte
+            decompressed.append(compressed_data[index])
             index += 1
     
     return bytes(decompressed)
