@@ -44,14 +44,3 @@ def test_invalid_multiple_negative():
 def test_large_limit():
     """Test with a larger limit."""
     assert sum_of_multiples(1000, [3, 5]) == 234168
-
-def test_debug_large_limit():
-    """Debug the large limit case."""
-    multiples_3 = list(range(3, 1000, 3))
-    multiples_5 = list(range(5, 1000, 5))
-    all_multiples = sorted(set(multiples_3 + multiples_5))
-    print(f"3 multiples: {multiples_3}")
-    print(f"5 multiples: {multiples_5}")
-    print(f"Total unique multiples: {all_multiples}")
-    print(f"Sum of multiples: {sum(all_multiples)}")
-    assert False, "Debugging test"
