@@ -34,27 +34,28 @@ def lzvn_compress(data):
     
     while index < len(data):
         # Look for repeated sequences
-        match_length = 0
-        match_offset = 0
+        best_match_length = 0
+        best_match_offset = 0
         
-        # Simple matching strategy
+        # Search back for repeated sequences, limited to 256 bytes
         for look_behind in range(1, min(index + 1, 256)):
-            current_match_length = 0
-            while (index + current_match_length < len(data) and 
-                   data[index + current_match_length] == data[index - look_behind + current_match_length] and 
-                   current_match_length < 15):
-                current_match_length += 1
+            match_length = 0
+            while (index + match_length < len(data) and 
+                   data[index + match_length] == data[index - look_behind + match_length] and 
+                   match_length < 15):
+                match_length += 1
             
-            if current_match_length > match_length:
-                match_length = current_match_length
-                match_offset = look_behind
+            # Update best match if found
+            if match_length > best_match_length:
+                best_match_length = match_length
+                best_match_offset = look_behind
         
         # Encoding logic
-        if match_length > 2:
+        if best_match_length > 2:
             # Compressed token: offset | length
-            token = ((match_offset & 0x0F) << 4) | (match_length & 0x0F)
+            token = ((best_match_offset & 0x0F) << 4) | (best_match_length & 0x0F)
             compressed.append(token)
-            index += match_length
+            index += best_match_length
         else:
             # Literal byte
             compressed.append(data[index])
@@ -88,28 +89,39 @@ def lzvn_decompress(compressed_data):
     index = 0
     
     while index < len(compressed_data):
+        # Current token represents either match or literal
         token = compressed_data[index]
         
-        # Determine if token represents a match or literal
+        # Extract match info
         match_offset = (token >> 4) & 0x0F
         match_length = token & 0x0F
         
+        # If no match, it's a literal byte
         if match_length == 0 and match_offset == 0:
-            # Literal byte
             decompressed.append(compressed_data[index])
             index += 1
-        elif match_length > 0:
-            # Repeated sequence
-            if len(decompressed) < match_offset:
-                raise ValueError("Corrupted compressed data")
-            
-            start = len(decompressed) - match_offset
-            for i in range(match_length):
-                decompressed.append(decompressed[start + i])
-            
+            continue
+        
+        # For matches, handle sequence expansion
+        if match_offset == 0:
+            # For literals with no offset, just append
+            for _ in range(match_length):
+                decompressed.append(compressed_data[index])
             index += 1
         else:
-            # Invalid token
-            raise ValueError("Invalid compression token")
+            # Verify we have enough previous bytes for lookback
+            if len(decompressed) < match_offset:
+                decompressed.append(compressed_data[index])
+                index += 1
+                continue
+            
+            # Repeat sequence from previous bytes
+            start = len(decompressed) - match_offset
+            for i in range(match_length):
+                if start + i < len(decompressed):
+                    decompressed.append(decompressed[start + i])
+                else:
+                    break
+            index += 1
     
     return bytes(decompressed)
