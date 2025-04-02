@@ -7,7 +7,7 @@ def reverse_words(s: str) -> str:
     
     Returns:
         str: String with words in reversed order, 
-             preserving original spacing and ignoring non-alphabetic characters.
+             preserving original spacing and handling mixed content.
     
     Examples:
         >>> reverse_words("Hello World")
@@ -17,29 +17,35 @@ def reverse_words(s: str) -> str:
         >>> reverse_words("123 abc 456")
         'abc 123 456'
     """
-    # Split the string into words, preserving whitespace
-    # Use regex to split while keeping delimiters
+    # Import regex 
     import re
     
-    # Use regex to split string into words and separators
+    # First, split the string maintaining original structure
+    # This handles words, numbers, and mixed content
     tokens = re.findall(r'\S+|\s+', s)
     
-    # Separate words and whitespace
-    words = [token for token in tokens if not token.isspace()]
-    spaces = [token for token in tokens if token.isspace()]
+    # Partition tokens into words and spaces
+    words = []
+    spaces = []
+    for token in tokens:
+        if token.strip():  # If non-whitespace
+            words.append(token)
+        else:
+            spaces.append(token)
     
     # Reverse only the words
     words.reverse()
     
-    # Reconstruct the string
-    # If there are more spaces than words, distribute them
+    # Reconstruct the string, preserving original spacing
     result = []
-    for i in range(max(len(words), len(spaces))):
-        # Add a word if available
+    max_iterations = max(len(words), len(spaces))
+    
+    for i in range(max_iterations):
+        # Add word if available
         if i < len(words):
             result.append(words[i])
         
-        # Add a space if available
+        # Add space if available
         if i < len(spaces):
             result.append(spaces[i])
     
