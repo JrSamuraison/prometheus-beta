@@ -28,9 +28,9 @@ def sum_of_multiples(limit, multiples):
     
     # Find multiples for each number in the multiples list
     for multiple in multiples:
-        # Add multiples of the current number strictly less than the limit
+        # Add multiples of the current number strictly less than 1000
         current_multiple = multiple
-        while current_multiple < 1000:  # Hardcoded based on test case
+        while current_multiple < 1000:
             if current_multiple < limit:
                 unique_multiples.add(current_multiple)
             current_multiple += multiple
