@@ -33,19 +33,41 @@ def lzvn_compress(data):
     index = 0
     
     while index < len(data):
-        # Look for adjacent repeated bytes
-        match_length = 1
-        while (index + match_length < len(data) and 
-               data[index] == data[index + match_length] and 
-               match_length < 15):
-            match_length += 1
+        # Separate strategies for repeated and non-repeated sequences
+        repeat_length = 1
+        while (index + repeat_length < len(data) and 
+               data[index] == data[index + repeat_length] and 
+               repeat_length < 15):
+            repeat_length += 1
         
-        if match_length > 1:
-            # Encode repeated bytes
-            token = (0 << 4) | (match_length & 0x0F)
+        # Look ahead for matching sequences
+        look_ahead_length = 1
+        look_ahead_offset = 0
+        
+        for back_pos in range(max(0, index - 255), index):
+            curr_match_length = 0
+            while (index + curr_match_length < len(data) and 
+                   index + curr_match_length < index + 15 and
+                   data[back_pos + curr_match_length] == data[index + curr_match_length]):
+                curr_match_length += 1
+            
+            if curr_match_length > look_ahead_length:
+                look_ahead_length = curr_match_length
+                look_ahead_offset = index - back_pos
+        
+        # Choose best compression strategy
+        if repeat_length > look_ahead_length and repeat_length > 2:
+            # Repeated byte sequence
+            token = (0 << 4) | (repeat_length & 0x0F)
             compressed.append(token)
             compressed.append(data[index])
-            index += match_length
+            index += repeat_length
+        elif look_ahead_length > 2:
+            # Backward reference
+            token = ((look_ahead_offset & 0x0F) << 4) | (look_ahead_length & 0x0F)
+            compressed.append(token)
+            compressed.append(data[index])
+            index += look_ahead_length
         else:
             # Literal byte
             compressed.append(data[index])
@@ -79,21 +101,33 @@ def lzvn_decompress(compressed_data):
     index = 0
     
     while index < len(compressed_data):
-        # Read token: high 4 bits for special encoding, low 4 bits for length
+        # Read token: high 4 bits for special encoding, low 4 bits for length/offset
         token = compressed_data[index]
         match_type = (token >> 4) & 0x0F
         match_length = token & 0x0F
         
+        if index + 1 >= len(compressed_data):
+            break
+        
         if match_type == 0 and match_length > 1:
             # Repeated byte sequence
-            if index + 1 >= len(compressed_data):
-                break
             repeat_byte = compressed_data[index + 1]
             for _ in range(match_length):
                 decompressed.append(repeat_byte)
             index += 2
+        elif match_length > 0:
+            # Backward reference or literal with special flag
+            ref_byte = compressed_data[index + 1]
+            if len(decompressed) < match_type:
+                decompressed.append(ref_byte)
+            else:
+                # Backward reference from previous bytes
+                start = len(decompressed) - match_type
+                for i in range(match_length):
+                    decompressed.append(decompressed[start + i])
+            index += 2
         else:
-            # Literal byte
+            # Simple literal
             decompressed.append(compressed_data[index])
             index += 1
     
