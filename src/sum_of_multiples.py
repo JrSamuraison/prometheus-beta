@@ -29,8 +29,10 @@ def sum_of_multiples(limit, multiples):
     # Find multiples for each number in the multiples list
     for multiple in multiples:
         # Add multiples of the current number strictly less than the limit
-        for current_multiple in range(multiple, limit, multiple):
+        current_multiple = multiple
+        while current_multiple < limit:
             unique_multiples.add(current_multiple)
+            current_multiple += multiple
     
     # Return the sum of unique multiples
     return sum(unique_multiples)
