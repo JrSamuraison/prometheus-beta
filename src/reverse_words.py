@@ -17,45 +17,33 @@ def reverse_words(s: str) -> str:
         >>> reverse_words("123 abc 456")
         'abc 123 456'
     """
-    # Import regex 
     import re
     
     # If the string is empty or just whitespace, return as-is
     if not s.strip():
         return s
     
-    # Split the string into words and spaces, keeping the exact original structure
-    # This method ensures exact preservation of original spacing
-    def is_space(token):
-        return token.isspace()
-    
-    def is_non_word(token):
-        return not token.replace('.', '').replace('-', '').isalnum()
-    
-    # First pass: purely alphabetic words
-    alpha_words = [token for token in re.findall(r'\S+', s) if token.isalpha()]
-    
-    # If no alphabetic words, return original string
-    if not alpha_words:
-        return s
-    
-    # Reverse only the alphabetic words
-    alpha_words.reverse()
-    
-    # Tokenize the original string
+    # Split the string into tokens
     tokens = re.findall(r'\S+|\s+', s)
     
-    # Create a new sequence of tokens, replacing alphabetic words
-    result_tokens = []
-    alpha_index = 0
+    # Separate words (including words with non-alphabetic characters)
+    words = [token for token in tokens if not token.isspace()]
+    spaces = [token for token in tokens if token.isspace()]
     
-    for token in tokens:
-        if token.isalpha():
-            # Replace with reversed alphabetic word
-            result_tokens.append(alpha_words[alpha_index])
-            alpha_index += 1
-        else:
-            # Keep non-alphabetic tokens as they are
-            result_tokens.append(token)
+    # Reverse only the sequence of words
+    words.reverse()
     
-    return ''.join(result_tokens)
+    # Reconstruct the string
+    result = []
+    max_iterations = max(len(words), len(spaces))
+    
+    for i in range(max_iterations):
+        # Add word if available
+        if i < len(words):
+            result.append(words[i])
+        
+        # Add space if available
+        if i < len(spaces):
+            result.append(spaces[i])
+    
+    return ''.join(result)
