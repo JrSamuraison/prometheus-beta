@@ -30,31 +30,32 @@ def reverse_words(s: str) -> str:
     words = [token for token in tokens if not token.isspace()]
     spaces = [token for token in tokens if token.isspace()]
     
-    # Separate alphabetic words and non-alphabetic tokens
+    # Separate alphabetic words 
     alpha_words = [word for word in words if word.replace('.', '').replace('-', '').isalpha()]
-    non_alpha_tokens = [word for word in words if not word.replace('.', '').replace('-', '').isalpha()]
+    
+    # If no alphabetic words, return original string
+    if not alpha_words:
+        return s
     
     # Reverse only the alphabetic words 
     alpha_words.reverse()
     
-    # Reconstruct the tokens, prioritizing original non-alphabetic tokens
+    # Reconstruct the tokens, ensuring alphabetic words are positioned correctly
     result_tokens = []
     alpha_index = 0
-    non_alpha_index = 0
     
     for token in tokens:
         if token.isspace():
             # Always add spaces
             result_tokens.append(token)
         else:
-            # Replace with appropriate token based on type
+            # Replace with appropriate word
             if token.replace('.', '').replace('-', '').isalpha():
                 # Use reversed alphabetic word
                 result_tokens.append(alpha_words[alpha_index])
                 alpha_index += 1
             else:
-                # Preserve original order for non-alphabetic tokens
-                result_tokens.append(non_alpha_tokens[non_alpha_index])
-                non_alpha_index += 1
+                # Preserve original position of non-alphabetic tokens
+                result_tokens.append(token)
     
     return ''.join(result_tokens)
