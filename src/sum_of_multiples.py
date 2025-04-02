@@ -28,8 +28,11 @@ def sum_of_multiples(limit, multiples):
     
     # Find multiples for each number in the multiples list
     for multiple in multiples:
-        # Add all multiples of the current number up to the limit
-        unique_multiples.update(range(multiple, limit + 1, multiple))
+        # Add multiples of the current number up to (but not exceeding) the limit
+        current_multiple = multiple
+        while current_multiple <= limit:
+            unique_multiples.add(current_multiple)
+            current_multiple += multiple
     
     # Return the sum of unique multiples
     return sum(unique_multiples)
