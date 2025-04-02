@@ -7,7 +7,7 @@ def reverse_words(s: str) -> str:
     
     Returns:
         str: String with words in reversed order, 
-             preserving original spacing and handling mixed content.
+             precisely preserving original spacing and handling mixed content.
     
     Examples:
         >>> reverse_words("Hello World")
@@ -20,33 +20,42 @@ def reverse_words(s: str) -> str:
     # Import regex 
     import re
     
-    # First, split the string maintaining original structure
-    # This handles words, numbers, and mixed content
+    # If the string is empty or just whitespace, return as-is
+    if not s.strip():
+        return s
+    
+    # Split the string into words and spaces, keeping the exact original structure
+    # This method ensures exact preservation of original spacing
+    def is_space(token):
+        return token.isspace()
+    
+    def is_non_word(token):
+        return not token.replace('.', '').replace('-', '').isalnum()
+    
+    # First pass: purely alphabetic words
+    alpha_words = [token for token in re.findall(r'\S+', s) if token.isalpha()]
+    
+    # If no alphabetic words, return original string
+    if not alpha_words:
+        return s
+    
+    # Reverse only the alphabetic words
+    alpha_words.reverse()
+    
+    # Tokenize the original string
     tokens = re.findall(r'\S+|\s+', s)
     
-    # Partition tokens into words and spaces
-    words = []
-    spaces = []
+    # Create a new sequence of tokens, replacing alphabetic words
+    result_tokens = []
+    alpha_index = 0
+    
     for token in tokens:
-        if token.strip():  # If non-whitespace
-            words.append(token)
+        if token.isalpha():
+            # Replace with reversed alphabetic word
+            result_tokens.append(alpha_words[alpha_index])
+            alpha_index += 1
         else:
-            spaces.append(token)
+            # Keep non-alphabetic tokens as they are
+            result_tokens.append(token)
     
-    # Reverse only the words
-    words.reverse()
-    
-    # Reconstruct the string, preserving original spacing
-    result = []
-    max_iterations = max(len(words), len(spaces))
-    
-    for i in range(max_iterations):
-        # Add word if available
-        if i < len(words):
-            result.append(words[i])
-        
-        # Add space if available
-        if i < len(spaces):
-            result.append(spaces[i])
-    
-    return ''.join(result)
+    return ''.join(result_tokens)
